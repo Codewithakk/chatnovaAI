@@ -12,15 +12,16 @@
 
 const nodemailer = require("nodemailer");
 const { EMAIL, PASSWORD, FRONTEND_URL } = require("../secrets.js");
-
+console.log("EMAIL:", EMAIL);
+console.log("PASSWORD loaded:", PASSWORD);
 const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: { user: EMAIL, pass: PASSWORD },
-    connectionTimeout: 120000,
-    greetingTimeout: 120000,
-    socketTimeout: 120000,
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  auth: { user: EMAIL, pass: PASSWORD },
+  connectionTimeout: 120000,
+  greetingTimeout: 120000,
+  socketTimeout: 120000,
 });
 
 /**
@@ -30,16 +31,16 @@ const transporter = nodemailer.createTransport({
  * @param {string} conversationId     - used to deep-link back to the conversation
  */
 const sendMessageEmail = (receiver, sender, messageText, conversationId) => {
-    const preview =
-        messageText && messageText.trim()
-            ? messageText.length > 120
-                ? messageText.slice(0, 120) + "…"
-                : messageText
-            : "📷 sent you an image";
+  const preview =
+    messageText && messageText.trim()
+      ? messageText.length > 120
+        ? messageText.slice(0, 120) + "…"
+        : messageText
+      : "📷 sent you an image";
 
-    const chatLink = `${FRONTEND_URL}/user/conversations/${conversationId}`;
+  const chatLink = `${FRONTEND_URL}/user/conversations/${conversationId}`;
 
-    const html = `<!DOCTYPE html>
+  const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -115,17 +116,17 @@ const sendMessageEmail = (receiver, sender, messageText, conversationId) => {
 </body>
 </html>`;
 
-    // Intentionally NOT awaited — fire and forget
-    transporter
-        .sendMail({
-            from: `"Conversa" <${EMAIL}>`,
-            to: receiver.email,
-            subject: `💬 ${sender.name} sent you a message on Conversa`,
-            html,
-        })
-        .catch((err) => {
-            console.error("[sendMessageEmail] Failed to send notification email:", err.message);
-        });
+  // Intentionally NOT awaited — fire and forget
+  transporter
+    .sendMail({
+      from: `"Conversa" <${EMAIL}>`,
+      to: receiver.email,
+      subject: `💬 ${sender.name} sent you a message on Conversa`,
+      html,
+    })
+    .catch((err) => {
+      console.error("[sendMessageEmail] Failed to send notification email:", err.message);
+    });
 };
 
 module.exports = sendMessageEmail;
