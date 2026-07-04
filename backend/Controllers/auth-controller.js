@@ -12,16 +12,14 @@ console.log("JWT EXISTS:", !!JWT_SECRET);
 console.log("=================================");
 
 let mailTransporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
+  service: 'Gmail',
   auth: {
     user: EMAIL,
     pass: PASSWORD,
   },
-  connectionTimeout: 120000,
-  greetingTimeout: 120000,
-  socketTimeout: 120000
+  // connectionTimeout: 120000,
+  // greetingTimeout: 120000,
+  // socketTimeout: 120000
 });
 
 mailTransporter.verify(async (err, success) => {
