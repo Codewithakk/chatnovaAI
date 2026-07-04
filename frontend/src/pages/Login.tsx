@@ -4,7 +4,7 @@ import {
     ArrowLeft, Eye, EyeOff, RotateCcw, MessageCircle,
     Zap, Shield, Bot, Sparkles, CheckCircle2,
     Mail, Lock, KeyRound, Fingerprint, ArrowRight,
-    Users, Clock, Star
+    Users, Star
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
