@@ -13,7 +13,7 @@ console.log("=================================");
 
 let mailTransporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 587,
+  port: 465,
   secure: true,
   auth: {
     user: EMAIL,
@@ -342,17 +342,34 @@ const sendotp = async (req, res) => {
 
 const sendVerificationOtp = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
-    if (user.isEmailVerified)
-      return res.status(400).json({ error: "Email is already verified" });
+    // Check if user exists in request (from middleware)
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
 
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ error: "Email is already verified" });
+    }
+
+    // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000);
     const salt = await bcrypt.genSalt(10);
     const hashedOtp = await bcrypt.hash(otp.toString(), salt);
+
     user.otp = hashedOtp;
     user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
     await user.save();
+
+    // Check email configuration
+    if (!EMAIL || !PASSWORD) {
+      console.error("Email credentials missing!");
+      return res.status(500).json({ error: "Email service not configured" });
+    }
 
     const mailDetails = {
       from: `"ChatnovaAI" <${EMAIL}>`,
@@ -422,16 +439,26 @@ const sendVerificationOtp = async (req, res) => {
 </html>`,
     };
 
-    try {
-      await mailTransporter.sendMail(mailDetails);
-      return res.status(200).json({ message: "Verification OTP sent" });
-    } catch (err) {
-      console.error("Mail error:", err);
-      return res.status(500).json({ message: "Failed to send OTP" });
-    }
+    await mailTransporter.sendMail(mailDetails);
+    return res.status(200).json({
+      message: "Verification OTP sent successfully",
+      email: user.email
+    });
+
   } catch (error) {
-    console.error(error.message);
-    res.status(500).send("Internal Server Error");
+    console.error("Send verification OTP error:", error.message);
+    console.error("Stack:", error.stack);
+
+    // Check if it's a nodemailer error
+    if (error.code === 'EAUTH') {
+      return res.status(500).json({
+        error: "Email authentication failed. Please check your email credentials."
+      });
+    }
+
+    return res.status(500).json({
+      error: "Failed to send verification OTP. Please try again later."
+    });
   }
 };
 
