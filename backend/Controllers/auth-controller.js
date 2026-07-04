@@ -4,6 +4,12 @@ const nodemailer = require("nodemailer");
 const User = require("../Models/User.js");
 const Conversation = require("../Models/Conversation.js");
 const { JWT_SECRET, EMAIL, PASSWORD } = require("../secrets.js");
+console.log("========== SMTP CONFIG ==========");
+console.log("EMAIL:", EMAIL);
+console.log("PASSWORD EXISTS:", !!PASSWORD);
+console.log("PASSWORD LENGTH:", PASSWORD ? PASSWORD.length : 0);
+console.log("JWT EXISTS:", !!JWT_SECRET);
+console.log("=================================");
 
 let mailTransporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
@@ -18,6 +24,21 @@ let mailTransporter = nodemailer.createTransport({
   socketTimeout: 120000
 });
 
+mailTransporter.verify(async (err, success) => {
+  console.log("========== SMTP VERIFY ==========");
+
+  if (err) {
+    console.error("VERIFY FAILED");
+    console.error("Code:", err.code);
+    console.error("Command:", err.command);
+    console.error(err);
+  } else {
+    console.log("SMTP VERIFIED");
+    console.log(success);
+  }
+
+  console.log("=================================");
+});
 
 const register = async (req, res) => {
   // Registration involves 3 dependent DB writes:
@@ -194,7 +215,10 @@ const sendotp = async (req, res) => {
   try {
     console.log("sendotp request received");
     const { email } = req.body;
+    console.log("========== SEND OTP ==========");
+    console.log("Email:", email);
     const user = await User.findOne({ email: req.body.email });
+    console.log("User found:", !!user);
     if (!user) {
       return res.status(400).json({
         error: "User not found",
@@ -206,7 +230,8 @@ const sendotp = async (req, res) => {
     user.otp = hashedOtp;
     user.otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // OTP valid for 5 minutes
     await user.save();
-
+    console.log("OTP saved successfully");
+    console.log("OTP expires:", user.otpExpiry);
     let mailDetails = {
       from: `"ChatnovaAI" <${EMAIL}>`,
       to: email,
@@ -290,13 +315,23 @@ const sendotp = async (req, res) => {
   </body>
   </html>`,
     };
-
+    console.log("Sending email...");
+    console.log(mailDetails);
     // Use promise-based approach
     try {
       await mailTransporter.sendMail(mailDetails);
       return res.status(200).json({ message: "OTP sent" });
     } catch (err) {
       console.error("Mail error:", err);
+      console.error("========== MAIL ERROR ==========");
+      console.error("Code:", err.code);
+      console.error("Command:", err.command);
+      console.error("Response:", err.response);
+      console.error("ResponseCode:", err.responseCode);
+      console.error("Message:", err.message);
+      console.error("Stack:", err.stack);
+      console.error(err);
+      console.error("================================");
       return res.status(500).json({ message: "Failed to send OTP" });
     }
   } catch (error) {
