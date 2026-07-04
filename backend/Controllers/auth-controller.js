@@ -4,39 +4,20 @@ const nodemailer = require("nodemailer");
 const User = require("../Models/User.js");
 const Conversation = require("../Models/Conversation.js");
 const { JWT_SECRET, EMAIL, PASSWORD } = require("../secrets.js");
-console.log("========== SMTP CONFIG ==========");
-console.log("EMAIL:", EMAIL);
-console.log("PASSWORD EXISTS:", !!PASSWORD);
-console.log("PASSWORD LENGTH:", PASSWORD ? PASSWORD.length : 0);
-console.log("JWT EXISTS:", !!JWT_SECRET);
-console.log("=================================");
 
 let mailTransporter = nodemailer.createTransport({
-  service: 'Gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
   auth: {
     user: EMAIL,
     pass: PASSWORD,
   },
-  // connectionTimeout: 120000,
-  // greetingTimeout: 120000,
-  // socketTimeout: 120000
+  connectionTimeout: 120000,
+  greetingTimeout: 120000,
+  socketTimeout: 120000
 });
 
-mailTransporter.verify(async (err, success) => {
-  console.log("========== SMTP VERIFY ==========");
-
-  if (err) {
-    console.error("VERIFY FAILED");
-    console.error("Code:", err.code);
-    console.error("Command:", err.command);
-    console.error(err);
-  } else {
-    console.log("SMTP VERIFIED");
-    console.log(success);
-  }
-
-  console.log("=================================");
-});
 
 const register = async (req, res) => {
   // Registration involves 3 dependent DB writes:
@@ -213,10 +194,7 @@ const sendotp = async (req, res) => {
   try {
     console.log("sendotp request received");
     const { email } = req.body;
-    console.log("========== SEND OTP ==========");
-    console.log("Email:", email);
     const user = await User.findOne({ email: req.body.email });
-    console.log("User found:", !!user);
     if (!user) {
       return res.status(400).json({
         error: "User not found",
@@ -228,18 +206,17 @@ const sendotp = async (req, res) => {
     user.otp = hashedOtp;
     user.otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // OTP valid for 5 minutes
     await user.save();
-    console.log("OTP saved successfully");
-    console.log("OTP expires:", user.otpExpiry);
+
     let mailDetails = {
-      from: `"ChatnovaAI" <${EMAIL}>`,
+      from: `"Conversa" <${EMAIL}>`,
       to: email,
-      subject: "Your ChatnovaAI Login OTP - " + otp,
+      subject: "Your Conversa Login OTP - " + otp,
       html: `<!DOCTYPE html>
   <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Your ChatnovaAI OTP</title>
+    <title>Your Conversa OTP</title>
   </head>
   <body style="margin:0;padding:0;background-color:#f0f2f5;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
     <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f2f5;padding:40px 0;">
@@ -250,7 +227,7 @@ const sendotp = async (req, res) => {
         <!-- Header -->
         <tr>
         <td align="center" style="background-color:#6366f1;padding:36px 40px;">
-          <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:0.5px;">ChatnovaAI</h1>
+          <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:0.5px;">Conversa</h1>
           <p style="margin:6px 0 0;color:rgba(255,255,255,0.8);font-size:13px;">online chatting platform</p>
         </td>
         </tr>
@@ -260,7 +237,7 @@ const sendotp = async (req, res) => {
         <td style="padding:40px 40px 32px;">
           <p style="margin:0 0 8px;font-size:15px;color:#374151;">Hello,</p>
           <p style="margin:0 0 28px;font-size:15px;color:#374151;line-height:1.6;">
-          We received a request to sign in to your ChatnovaAI account. Use the one-time password below to complete your login.
+          We received a request to sign in to your Conversa account. Use the one-time password below to complete your login.
           </p>
 
           <!-- OTP Box -->
@@ -298,7 +275,7 @@ const sendotp = async (req, res) => {
         <tr>
         <td align="center" style="background-color:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 40px;">
           <p style="margin:0;font-size:12px;color:#9ca3af;">
-          &copy; ${new Date().getFullYear()} ChatnovaAI. All rights reserved.
+          &copy; ${new Date().getFullYear()} Conversa. All rights reserved.
           </p>
           <p style="margin:4px 0 0;font-size:12px;color:#9ca3af;">
           This is an automated message — please do not reply.
@@ -313,23 +290,13 @@ const sendotp = async (req, res) => {
   </body>
   </html>`,
     };
-    console.log("Sending email...");
-    console.log(mailDetails);
+
     // Use promise-based approach
     try {
       await mailTransporter.sendMail(mailDetails);
       return res.status(200).json({ message: "OTP sent" });
     } catch (err) {
       console.error("Mail error:", err);
-      console.error("========== MAIL ERROR ==========");
-      console.error("Code:", err.code);
-      console.error("Command:", err.command);
-      console.error("Response:", err.response);
-      console.error("ResponseCode:", err.responseCode);
-      console.error("Message:", err.message);
-      console.error("Stack:", err.stack);
-      console.error(err);
-      console.error("================================");
       return res.status(500).json({ message: "Failed to send OTP" });
     }
   } catch (error) {
@@ -340,39 +307,22 @@ const sendotp = async (req, res) => {
 
 const sendVerificationOtp = async (req, res) => {
   try {
-    // Check if user exists in request (from middleware)
-    if (!req.user || !req.user.id) {
-      return res.status(401).json({ error: "Authentication required" });
-    }
-
     const user = await User.findById(req.user.id);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    if (user.isEmailVerified) {
+    if (!user) return res.status(404).json({ error: "User not found" });
+    if (user.isEmailVerified)
       return res.status(400).json({ error: "Email is already verified" });
-    }
 
-    // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000);
     const salt = await bcrypt.genSalt(10);
     const hashedOtp = await bcrypt.hash(otp.toString(), salt);
-
     user.otp = hashedOtp;
     user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
     await user.save();
 
-    // Check email configuration
-    if (!EMAIL || !PASSWORD) {
-      console.error("Email credentials missing!");
-      return res.status(500).json({ error: "Email service not configured" });
-    }
-
     const mailDetails = {
-      from: `"ChatnovaAI" <${EMAIL}>`,
+      from: `"Conversa" <${EMAIL}>`,
       to: user.email,
-      subject: `Verify your ChatnovaAI email – OTP: ${otp}`,
+      subject: `Verify your Conversa email – OTP: ${otp}`,
       html: `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -387,7 +337,7 @@ const sendVerificationOtp = async (req, res) => {
         <table width="520" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
           <tr>
             <td align="center" style="background-color:#6366f1;padding:36px 40px;">
-              <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:0.5px;">ChatnovaAI</h1>
+              <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:0.5px;">Conversa</h1>
               <p style="margin:6px 0 0;color:rgba(255,255,255,0.8);font-size:13px;">Verify your email address</p>
             </td>
           </tr>
@@ -395,7 +345,7 @@ const sendVerificationOtp = async (req, res) => {
             <td style="padding:40px 40px 32px;">
               <p style="margin:0 0 8px;font-size:15px;color:#374151;">Hello ${user.name},</p>
               <p style="margin:0 0 28px;font-size:15px;color:#374151;line-height:1.6;">
-                Please use the OTP below to verify your email address and unlock full access to ChatnovaAI.
+                Please use the OTP below to verify your email address and unlock full access to Conversa.
               </p>
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
@@ -416,7 +366,7 @@ const sendVerificationOtp = async (req, res) => {
                 <tr>
                   <td style="background-color:#fffbeb;border-left:4px solid #f59e0b;border-radius:0 6px 6px 0;padding:12px 16px;">
                     <p style="margin:0;font-size:13px;color:#92400e;">
-                      If you did not sign up for ChatnovaAI, you can safely ignore this email.
+                      If you did not sign up for Conversa, you can safely ignore this email.
                     </p>
                   </td>
                 </tr>
@@ -425,7 +375,7 @@ const sendVerificationOtp = async (req, res) => {
           </tr>
           <tr>
             <td align="center" style="background-color:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 40px;">
-              <p style="margin:0;font-size:12px;color:#9ca3af;">&copy; ${new Date().getFullYear()} ChatnovaAI. All rights reserved.</p>
+              <p style="margin:0;font-size:12px;color:#9ca3af;">&copy; ${new Date().getFullYear()} Conversa. All rights reserved.</p>
               <p style="margin:4px 0 0;font-size:12px;color:#9ca3af;">This is an automated message — please do not reply.</p>
             </td>
           </tr>
@@ -437,26 +387,16 @@ const sendVerificationOtp = async (req, res) => {
 </html>`,
     };
 
-    await mailTransporter.sendMail(mailDetails);
-    return res.status(200).json({
-      message: "Verification OTP sent successfully",
-      email: user.email
-    });
-
-  } catch (error) {
-    console.error("Send verification OTP error:", error.message);
-    console.error("Stack:", error.stack);
-
-    // Check if it's a nodemailer error
-    if (error.code === 'EAUTH') {
-      return res.status(500).json({
-        error: "Email authentication failed. Please check your email credentials."
-      });
+    try {
+      await mailTransporter.sendMail(mailDetails);
+      return res.status(200).json({ message: "Verification OTP sent" });
+    } catch (err) {
+      console.error("Mail error:", err);
+      return res.status(500).json({ message: "Failed to send OTP" });
     }
-
-    return res.status(500).json({
-      error: "Failed to send verification OTP. Please try again later."
-    });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Internal Server Error");
   }
 };
 
