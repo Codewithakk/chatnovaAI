@@ -1,4 +1,4 @@
-# Conversa — MERN Real-Time Chat Application
+# ChatnovaAI — MERN Real-Time Chat Application
 
 <div align="center">
 

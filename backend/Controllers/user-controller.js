@@ -247,7 +247,7 @@ const deleteAccount = async (req, res) => {
 
     await User.findByIdAndUpdate(userId, {
       isDeleted: true,
-      name: "Deleted Conversa User",
+      name: "Deleted ChatnovaAI User",
       about: "",
       email: anonymisedEmail,
       profilePic: "https://ui-avatars.com/api/?name=Deleted+User&background=808080&color=ffffff&bold=true",

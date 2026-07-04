@@ -290,7 +290,7 @@ module.exports = (io, socket, userSocketMap) => {
         // If the tombstone is newer (or no other messages exist) → show tombstone text
         const newLatest =
           !latestNonDeleted ||
-          new Date(updated.createdAt) >= new Date(latestNonDeleted.createdAt)
+            new Date(updated.createdAt) >= new Date(latestNonDeleted.createdAt)
             ? 'This message was deleted'
             : latestNonDeleted.text || 'sent an image';
 

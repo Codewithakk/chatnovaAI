@@ -45,7 +45,7 @@ const sendMessageEmail = (receiver, sender, messageText, conversationId) => {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>New Message on Conversa</title>
+  <title>New Message on ChatnovaAI</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f0f2f5;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f2f5;padding:40px 0;">
@@ -57,7 +57,7 @@ const sendMessageEmail = (receiver, sender, messageText, conversationId) => {
           <!-- Header -->
           <tr>
             <td align="center" style="background-color:#6366f1;padding:32px 40px;">
-              <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:0.5px;">Conversa</h1>
+              <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:0.5px;">ChatnovaAI</h1>
               <p style="margin:6px 0 0;color:rgba(255,255,255,0.8);font-size:13px;">You have a new message</p>
             </td>
           </tr>
@@ -98,13 +98,13 @@ const sendMessageEmail = (receiver, sender, messageText, conversationId) => {
           <tr>
             <td align="center" style="background-color:#f9fafb;border-top:1px solid #e5e7eb;padding:18px 40px;">
               <p style="margin:0;font-size:12px;color:#9ca3af;">
-                You're receiving this because email notifications are enabled on your Conversa account.
+                You're receiving this because email notifications are enabled on your ChatnovaAI account.
               </p>
               <p style="margin:4px 0 0;font-size:12px;color:#9ca3af;">
                 To disable, visit <a href="${FRONTEND_URL}/user/profile" style="color:#6366f1;">Settings → Notifications</a>.
               </p>
               <p style="margin:8px 0 0;font-size:12px;color:#9ca3af;">
-                &copy; ${new Date().getFullYear()} Conversa. All rights reserved.
+                &copy; ${new Date().getFullYear()} ChatnovaAI. All rights reserved.
               </p>
             </td>
           </tr>
@@ -119,9 +119,9 @@ const sendMessageEmail = (receiver, sender, messageText, conversationId) => {
   // Intentionally NOT awaited — fire and forget
   transporter
     .sendMail({
-      from: `"Conversa" <${EMAIL}>`,
+      from: `"ChatnovaAI" <${EMAIL}>`,
       to: receiver.email,
-      subject: `💬 ${sender.name} sent you a message on Conversa`,
+      subject: `💬 ${sender.name} sent you a message on ChatnovaAI`,
       html,
     })
     .catch((err) => {
