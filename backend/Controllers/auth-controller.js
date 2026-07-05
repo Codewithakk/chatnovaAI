@@ -5,7 +5,7 @@ const User = require("../Models/User.js");
 const Conversation = require("../Models/Conversation.js");
 const { JWT_SECRET, EMAIL, PASSWORD } = require("../secrets.js");
 
-const transporter = nodemailer.createTransport({
+const mailTransporter = nodemailer.createTransport({
   host: "smtp-relay.brevo.com",
   port: 587,
   secure: false,
