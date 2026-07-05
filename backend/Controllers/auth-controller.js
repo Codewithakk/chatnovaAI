@@ -5,27 +5,16 @@ const User = require("../Models/User.js");
 const Conversation = require("../Models/Conversation.js");
 const { JWT_SECRET, EMAIL, PASSWORD } = require("../secrets.js");
 
-let mailTransporter = nodemailer.createTransport({
-  service: "gmail",
-  pool: true,
-  maxConnections: 5,
-  maxMessages: 100,
+const transporter = nodemailer.createTransport({
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false,
   auth: {
-    user: EMAIL,
-    pass: PASSWORD,
+    user: process.env.EMAIL,
+    pass: process.env.PASSWORD,
   },
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000
 });
 
-mailTransporter.verify((err, success) => {
-  if (err) {
-    console.log("SMTP Error:", err);
-  } else {
-    console.log("SMTP Ready");
-  }
-});
 const register = async (req, res) => {
   // Registration involves 3 dependent DB writes:
   //   1. Create the new user
@@ -303,13 +292,7 @@ const sendotp = async (req, res) => {
       await mailTransporter.sendMail(mailDetails);
       return res.status(200).json({ message: "OTP sent" });
     } catch (err) {
-      console.error("Mail Error");
-      console.error(err);
-      console.error(err.code);
-      console.error(err.response);
-      console.error(err.responseCode);
-      console.error(err.message);
-
+      console.error("Mail error:", err);
       return res.status(500).json({ message: "Failed to send OTP" });
     }
   } catch (error) {
@@ -404,12 +387,7 @@ const sendVerificationOtp = async (req, res) => {
       await mailTransporter.sendMail(mailDetails);
       return res.status(200).json({ message: "Verification OTP sent" });
     } catch (err) {
-      console.error("Mail Error");
-      console.error(err);
-      console.error(err.code);
-      console.error(err.response);
-      console.error(err.responseCode);
-      console.error(err.message);
+      console.error("Mail error:", err);
       return res.status(500).json({ message: "Failed to send OTP" });
     }
   } catch (error) {
