@@ -13,7 +13,9 @@ const AWS_BUCKET_NAME = process.env.AWS_BUCKET_NAME;
 const AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY;
 const AWS_SECRET = process.env.AWS_SECRET;
 const FRONTEND_URL = process.env.FRONTEND_URL || "https://conversa-chatting.netlify.app";
-
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const SENDER_EMAIL = process.env.SENDER_EMAIL;
+const SENDER_NAME = process.env.SENDER_NAME;
 module.exports = {
   CORS_ORIGIN,
   MONGO_URI,
@@ -27,4 +29,7 @@ module.exports = {
   PASSWORD,
   AWS_BUCKET_NAME,
   FRONTEND_URL,
+  BREVO_API_KEY,
+  SENDER_EMAIL,
+  SENDER_NAME
 };
