@@ -296,7 +296,13 @@ const sendotp = async (req, res) => {
       await mailTransporter.sendMail(mailDetails);
       return res.status(200).json({ message: "OTP sent" });
     } catch (err) {
-      console.error("Mail error:", err);
+      console.error("Mail Error");
+      console.error(err);
+      console.error(err.code);
+      console.error(err.response);
+      console.error(err.responseCode);
+      console.error(err.message);
+
       return res.status(500).json({ message: "Failed to send OTP" });
     }
   } catch (error) {
@@ -391,7 +397,12 @@ const sendVerificationOtp = async (req, res) => {
       await mailTransporter.sendMail(mailDetails);
       return res.status(200).json({ message: "Verification OTP sent" });
     } catch (err) {
-      console.error("Mail error:", err);
+      console.error("Mail Error");
+      console.error(err);
+      console.error(err.code);
+      console.error(err.response);
+      console.error(err.responseCode);
+      console.error(err.message);
       return res.status(500).json({ message: "Failed to send OTP" });
     }
   } catch (error) {
