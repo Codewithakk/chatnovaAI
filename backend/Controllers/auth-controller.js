@@ -6,19 +6,26 @@ const Conversation = require("../Models/Conversation.js");
 const { JWT_SECRET, EMAIL, PASSWORD } = require("../secrets.js");
 
 let mailTransporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
+  service: "gmail",
+  pool: true,
+  maxConnections: 5,
+  maxMessages: 100,
   auth: {
     user: EMAIL,
     pass: PASSWORD,
   },
-  connectionTimeout: 120000,
-  greetingTimeout: 120000,
-  socketTimeout: 120000
+  connectionTimeout: 30000,
+  greetingTimeout: 30000,
+  socketTimeout: 30000
 });
 
-
+mailTransporter.verify((err, success) => {
+  if (err) {
+    console.log("SMTP Error:", err);
+  } else {
+    console.log("SMTP Ready");
+  }
+});
 const register = async (req, res) => {
   // Registration involves 3 dependent DB writes:
   //   1. Create the new user
