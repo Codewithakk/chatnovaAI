@@ -510,16 +510,3 @@ Contributions are welcome! Please open an issue or submit a pull request with an
 3. Ensure all tests pass and the application runs correctly.
 4. Submit a pull request describing your changes and why they should be merged.
 
-## License
-
-MIT — see the [LICENSE](LICENSE) file for details.
-
----
-
-## About the Author
-
-Built by **Pankil Soni**
-
-- Email: pmsoni2016@gmail.com
-- LinkedIn: [pankil-soni-5a0541170](https://www.linkedin.com/in/pankil-soni-5a0541170/)
-- Kaggle: [pankilsoni](https://www.kaggle.com/pankilsoni)
